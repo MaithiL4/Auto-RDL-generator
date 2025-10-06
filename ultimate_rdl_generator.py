@@ -157,7 +157,7 @@ def main():
     st.title("📄 Smart RDL Generator UI")
     st.markdown("Paste your `CREATE PROCEDURE` script into the text area below to generate an RDL file.")
 
-    # Initialize session state for parameters
+    # Initialize session state
     if 'report_params' not in st.session_state:
         st.session_state.report_params = [
             {'name': 'ownerid', 'data_type': 'Integer'},
@@ -169,6 +169,8 @@ def main():
             {'name': 'filter2', 'data_type': 'String'},
             {'name': 'p_refcur', 'data_type': 'cursor'},
         ]
+    if 'fields' not in st.session_state:
+        st.session_state.fields = []
 
     sql_script = st.text_area("Enter SQL Script Here:", height=300, placeholder="CREATE OR REPLACE PROCEDURE...")
 
@@ -177,18 +179,33 @@ def main():
         st.stop()
 
     try:
-        sp_name, params, fields = parse_sp_definition(sql_script)
+        sp_name, params, detected_fields = parse_sp_definition(sql_script)
+        st.session_state.fields = detected_fields
 
         with st.expander("✅ Detected Information", expanded=True):
             st.write(f"**Procedure Name:** `{sp_name}`")
             st.write(f"**Parameters:** `{params}`")
-            st.write(f"**Detected Fields:** `{fields}`")
 
-        if not fields:
-            st.warning("Could not automatically detect output fields.")
-            fields_str = st.text_input("Please enter the fields manually, separated by commas (e.g., field1,field2):")
-            if fields_str:
-                fields = [f.strip() for f in fields_str.split(',') if f.strip()]
+        st.subheader("Report Fields")
+        for i, field in enumerate(st.session_state.fields):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.session_state.fields[i] = st.text_input("Field Name", value=field, key=f"field_name_{i}")
+            with col2:
+                if st.button("Remove", key=f"remove_field_{i}"):
+                    st.session_state.fields.pop(i)
+                    st.experimental_rerun()
+
+        with st.form("new_field_form"):
+            st.write("Add New Field")
+            new_field_name = st.text_input("Name")
+            
+            submitted = st.form_submit_button("Add Field")
+            if submitted:
+                st.session_state.fields.append(new_field_name)
+                st.experimental_rerun()
+
+        st.markdown("---")
 
         default_table_name = sp_name.split('.')[-1].replace('_', ' ').title()
         table_name = st.text_input("Enter a name for the report table:", value=default_table_name)
@@ -221,13 +238,13 @@ def main():
         st.markdown("---")
 
         if st.button("🚀 Generate RDL File", use_container_width=True):
-            if not fields:
+            if not st.session_state.fields:
                 st.error("Cannot generate RDL without fields. Please enter them manually above.")
             elif not table_name:
                 st.error("Table name cannot be empty.")
             else:
                 with st.spinner('Generating RDL content...'):
-                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, fields, table_name, st.session_state.report_params)
+                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, st.session_state.fields, table_name, st.session_state.report_params)
                 
                 if generated_rdl_content.startswith('Error') or generated_rdl_content.startswith('An unexpected error'):
                     st.error(generated_rdl_content)
