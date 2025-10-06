@@ -115,35 +115,7 @@ def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, tabl
     except Exception as e:
         return f"An unexpected error occurred: {e}"
 
-def parse_sp_definition(sp_text):
-    """Parses the CREATE PROCEDURE text to extract metadata."""
-    sp_name_match = re.search(r'PROCEDURE\s+([\w\.]+)', sp_text, re.IGNORECASE)
-    sp_name = sp_name_match.group(1) if sp_name_match else 'Unknown_SP'
-
-    params = {}
-    param_block_match = re.search(r'CREATE OR REPLACE PROCEDURE[\s\w\.]*\((.*?)\)', sp_text, re.DOTALL | re.IGNORECASE)
-    if param_block_match:
-        param_text = param_block_match.group(1)
-        param_matches = re.findall(r'IN(?:OUT)?\s+(\w+)\s+([\w\s]+(?:varying)?)', param_text, re.IGNORECASE)
-        for match in param_matches:
-            params[match[0]] = match[1].strip()
-
-    fields = []
-    sql_query = None
-
-    sql_query_match = re.search(r'sql_query\s*:=\s*\'(.*?)\';', sp_text, re.DOTALL | re.IGNORECASE)
-    if sql_query_match:
-        sql_query = sql_query_match.group(1)
-    else:
-        open_for_match = re.search(r'OPEN\s+\w+\s+FOR\s+(.*?);', sp_text, re.DOTALL | re.IGNORECASE)
-        if open_for_match:
-            sql_query = open_for_match.group(1)
-
-    if sql_query:
-        aliases = re.findall(r'AS\s+(\w+)', sql_query, re.IGNORECASE)
-        fields = aliases
-
-    return sp_name, params, fields
+def parse_sp_definition(sp_text):\n    \"\"\"Parses the CREATE PROCEDURE text to extract metadata.\"\"\"\n    sp_name_match = re.search(r\'PROCEDURE\\s+([\\w\\.]+)\', sp_text, re.IGNORECASE)\n    sp_name = sp_name_match.group(1) if sp_name_match else \'Unknown_SP\'\n\n    params = {}\n    param_block_match = re.search(r\'CREATE OR REPLACE PROCEDURE[\\s\\w\\.]*\\((.*?)\\)\', sp_text, re.DOTALL | re.IGNORECASE)\n    if param_block_match:\n        param_text = param_block_match.group(1)\n        param_matches = re.findall(r\'IN(?:OUT)?\\s+(\\w+)\\s+([\\w\\s]+(?:varying)?)\', param_text, re.IGNORECASE)\n        for match in param_matches:\n            params[match[0]] = match[1].strip()\n\n    fields = []\n    sql_query = None\n\n    sql_query_match = re.search(r\'sql_query\\s*:=\\s*\\\'(.*?)\\\';\', sp_text, re.DOTALL | re.IGNORECASE)\n    if sql_query_match:\n        sql_query = sql_query_match.group(1)\n    else:\n        open_for_match = re.search(r\'OPEN\\s+\\w+\\s+FOR\\s+(.*?);\', sp_text, re.DOTALL | re.IGNORECASE)\n        if open_for_match:\n            sql_query = open_for_match.group(1)\n\n    if sql_query:\n        # Remove comments\n        sql_query = re.sub(r\'--.*?\', \'\', sql_query)\n        sql_query = re.sub(r\'/\*.*?\*/\', \'\', sql_query, flags=re.DOTALL)\n\n        aliases = re.findall(r\'AS\\s+(\\w+|\\\"[^\\\"]+\\\")\', sql_query, re.IGNORECASE)\n        # Clean up the aliases by removing quotes\n        fields = [alias.replace(\'\"\', \'\') for alias in aliases]\n\n    return sp_name, params, fields
 
 # --- Streamlit UI Code (No changes here) ---
 
