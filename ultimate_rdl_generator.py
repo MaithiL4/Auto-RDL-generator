@@ -161,19 +161,7 @@ def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, tabl
                 tn = ET.SubElement(field, 'TypeName')
                 tn.text = 'System.String'
 
-        # --- Update Report Parameters ---
-        report_params_element = root.find('.//rdl:ReportParameters', ns)
-        if report_params_element is not None:
-            report_params_element.clear()  # Remove existing report parameters
-            for name, data_type in params.items():
-                rp = ET.SubElement(report_params_element, 'ReportParameter')
-                rp.set('Name', name)
-                dt = ET.SubElement(rp, 'DataType')
-                dt.text = map_db_type_to_rdl_type(data_type)
-                dv = ET.SubElement(rp, 'DefaultValue')
-                vs = ET.SubElement(dv, 'Values')
-                v = ET.SubElement(vs, 'Value')
-                v.text = '-1'  # Default value for all parameters
+
 
         # --- Update Table Name ---
         table_element = root.find('.//rdl:Table', ns)
