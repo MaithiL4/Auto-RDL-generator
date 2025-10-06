@@ -160,17 +160,19 @@ def main():
     # Initialize session state
     if 'report_params' not in st.session_state:
         st.session_state.report_params = [
-            {'name': 'ownerid', 'data_type': 'Integer'},
-            {'name': 'userid', 'data_type': 'Integer'},
-            {'name': 'startindex', 'data_type': 'Integer'},
-            {'name': 'endindex', 'data_type': 'Integer'},
-            {'name': 'filter', 'data_type': 'String'},
-            {'name': 'filter1', 'data_type': 'String'},
-            {'name': 'filter2', 'data_type': 'String'},
-            {'name': 'p_refcur', 'data_type': 'cursor'},
+            {'id': 1, 'name': 'ownerid', 'data_type': 'Integer'},
+            {'id': 2, 'name': 'userid', 'data_type': 'Integer'},
+            {'id': 3, 'name': 'startindex', 'data_type': 'Integer'},
+            {'id': 4, 'name': 'endindex', 'data_type': 'Integer'},
+            {'id': 5, 'name': 'filter', 'data_type': 'String'},
+            {'id': 6, 'name': 'filter1', 'data_type': 'String'},
+            {'id': 7, 'name': 'filter2', 'data_type': 'String'},
+            {'id': 8, 'name': 'p_refcur', 'data_type': 'cursor'},
         ]
     if 'fields' not in st.session_state:
         st.session_state.fields = []
+    if 'sql_script' not in st.session_state:
+        st.session_state.sql_script = ""
 
     sql_script = st.text_area("Enter SQL Script Here:", height=300, placeholder="CREATE OR REPLACE PROCEDURE...")
 
@@ -180,7 +182,10 @@ def main():
 
     try:
         sp_name, params, detected_fields = parse_sp_definition(sql_script)
-        st.session_state.fields = detected_fields
+        
+        if sql_script != st.session_state.sql_script:
+            st.session_state.fields = [{'id': i, 'name': field} for i, field in enumerate(detected_fields)]
+            st.session_state.sql_script = sql_script
 
         with st.expander("✅ Detected Information", expanded=True):
             st.write(f"**Procedure Name:** `{sp_name}`")
@@ -190,9 +195,9 @@ def main():
         for i, field in enumerate(st.session_state.fields):
             col1, col2 = st.columns([4, 1])
             with col1:
-                st.session_state.fields[i] = st.text_input("Field Name", value=field, key=f"field_name_{i}")
+                st.session_state.fields[i]['name'] = st.text_input("Field Name", value=field['name'], key=f"field_name_{field['id']}")
             with col2:
-                if st.button("Remove", key=f"remove_field_{i}"):
+                if st.button("Remove", key=f"remove_field_{field['id']}"):
                     st.session_state.fields.pop(i)
                     st.rerun()
 
@@ -202,7 +207,8 @@ def main():
             
             submitted = st.form_submit_button("Add Field")
             if submitted:
-                st.session_state.fields.append(new_field_name)
+                new_id = max([f['id'] for f in st.session_state.fields]) + 1 if st.session_state.fields else 1
+                st.session_state.fields.append({'id': new_id, 'name': new_field_name})
                 st.rerun()
 
         st.markdown("---")
@@ -217,11 +223,11 @@ def main():
         for i, param in enumerate(st.session_state.report_params):
             col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
-                st.session_state.report_params[i]['name'] = st.text_input("Name", value=param['name'], key=f"param_name_{i}")
+                st.session_state.report_params[i]['name'] = st.text_input("Name", value=param['name'], key=f"param_name_{param['id']}")
             with col2:
-                st.session_state.report_params[i]['data_type'] = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"], index=["String", "Integer", "DateTime", "Boolean", "Float", "cursor"].index(param['data_type']), key=f"param_type_{i}")
+                st.session_state.report_params[i]['data_type'] = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"], index=["String", "Integer", "DateTime", "Boolean", "Float", "cursor"].index(param['data_type']), key=f"param_type_{param['id']}")
             with col3:
-                if st.button("Remove", key=f"remove_param_{i}"):
+                if st.button("Remove", key=f"remove_param_{param['id']}"):
                     st.session_state.report_params.pop(i)
                     st.rerun()
 
@@ -232,19 +238,21 @@ def main():
             
             submitted = st.form_submit_button("Add Parameter")
             if submitted:
-                st.session_state.report_params.append({'name': new_param_name, 'data_type': new_param_type})
+                new_id = max([p['id'] for p in st.session_state.report_params]) + 1 if st.session_state.report_params else 1
+                st.session_state.report_params.append({'id': new_id, 'name': new_param_name, 'data_type': new_param_type})
                 st.rerun()
 
         st.markdown("---")
 
         if st.button("🚀 Generate RDL File", use_container_width=True):
-            if not st.session_state.fields:
+            field_names = [f['name'] for f in st.session_state.fields]
+            if not field_names:
                 st.error("Cannot generate RDL without fields. Please enter them manually above.")
             elif not table_name:
                 st.error("Table name cannot be empty.")
             else:
                 with st.spinner('Generating RDL content...'):
-                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, st.session_state.fields, table_name, st.session_state.report_params)
+                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, field_names, table_name, st.session_state.report_params)
                 
                 if generated_rdl_content.startswith('Error') or generated_rdl_content.startswith('An unexpected error'):
                     st.error(generated_rdl_content)
