@@ -123,7 +123,7 @@ def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, tabl
     """
     try:
         # Read the template file as a string and parse it.
-        with open('rdl_template.xml', 'r', encoding='utf-8') as f:
+        with open('rdl_template_clean.xml', 'r', encoding='utf-8') as f:
             rdl_template_content = f.read()
         root = ET.fromstring(rdl_template_content)
         ns = {'rdl': 'http://schemas.microsoft.com/sqlserver/reporting/2003/10/reportdefinition'}
