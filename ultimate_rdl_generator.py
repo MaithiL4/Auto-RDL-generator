@@ -32,8 +32,9 @@ def create_header_cell(field_name: str, ns_map: dict) -> ET.Element:
     Creates the XML for a table header cell for a given field.
     Returns an ElementTree element.
     """
-    # Convert CamelCase to Title Case with spaces
-    header_text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', field_name).title()
+    # Convert snake_case to Title Case with spaces, and handle CamelCase
+    header_text = field_name.replace('_', ' ')
+    header_text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', header_text).title()
 
     cell_xml = f'''
     <TableCell xmlns="{ns_map['rdl']}">
