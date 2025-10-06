@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2003/10/reportdefinition">
+	<PageHeight>11in</PageHeight>
+	<PageWidth>8.5in</PageWidth>
+	<TopMargin>0.75in</TopMargin>
+	<BottomMargin>0.75in</BottomMargin>
+	<LeftMargin>0.75in</LeftMargin>
+	<RightMargin>0.75in</RightMargin>
+	<DataSources>
+		<DataSource Name="DataSource1">
+			<ConnectionProperties>
+				<DataProvider>NPGSQL</DataProvider>
+				<ConnectString><![CDATA[##CONNECTION_STRING##]]></ConnectString>
+				<IntegratedSecurity>true</IntegratedSecurity>
+			</ConnectionProperties>
+		</DataSource>
+	</DataSources>
+	<DataSets>
+		<DataSet Name="DataSet1">
+			<Query>
+				<DataSourceName>DataSource1</DataSourceName>
+				<CommandType>StoredProcedure</CommandType>
+				<CommandText>hspl_Status_SubStatus_master_report</CommandText>
+				<Timeout>300</Timeout>
+				<QueryParameters>
+					<QueryParameter Name="@ownerid">
+						<Value>=Parameters!ownerid.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@userid">
+						<Value>=Parameters!userid.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@startindex">
+						<Value>=Parameters!startindex.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@endindex">
+						<Value>=Parameters!endindex.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@filter">
+						<Value>=Parameters!filter.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@filter1">
+						<Value>=Parameters!filter1.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@filter2">
+						<Value>=Parameters!filter2.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="refcursor">
+						<Value/>
+					</QueryParameter>
+				</QueryParameters>
+			</Query>
+			<Fields>
+				<Field Name="rn">
+					<DataField>rn</DataField>
+					<TypeName>System.String</TypeName>
+				</Field>
+				<Field Name="Status">
+					<DataField>Status</DataField>
+					<TypeName>System.String</TypeName>
+				</Field>
+				<Field Name="SubStatus">
+					<DataField>SubStatus</DataField>
+					<TypeName>System.String</TypeName>
+				</Field>
+			</Fields>
+		</DataSet>
+	</DataSets>
+	<ReportParameters>
+		<ReportParameter Name="ownerid">
+			<DataType>Integer</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="userid">
+			<DataType>Integer</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="startindex">
+			<DataType>Integer</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="endindex">
+			<DataType>Integer</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="filter">
+			<DataType>String</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="filter1">
+			<DataType>String</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="filter2">
+			<DataType>String</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+		<ReportParameter Name="p_refcur">
+			<DataType>cursor</DataType>
+			<DefaultValue>
+				<Values>
+					<Value>-1</Value>
+				</Values>
+			</DefaultValue>
+		</ReportParameter>
+	</ReportParameters>
+	<Body>
+		<Height>0pt</Height>
+		<Style>
+			<BackgroundColor>#ffffff</BackgroundColor>
+		</Style>
+		<ReportItems>
+			<Table Name="Status SubStatus Master">
+				<ZIndex>1</ZIndex>
+				<DataSetName>DataSet1</DataSetName>
+				<Left>0pt</Left>
+				<Top>10pt</Top>
+				<Height>0pt</Height>
+				<Width>0pt</Width>
+				<NoRows>No Record Found</NoRows>
+				<PageBreakAtEnd>true</PageBreakAtEnd>
+				<TableColumns>
+					<TableColumn>
+						<Width>0pt</Width>
+					</TableColumn>
+					<TableColumn>
+						<Width>0pt</Width>
+					</TableColumn>
+				</TableColumns>
+				<Style>
+					<FontFamily>Calibri, Verdana, Arial, Helvetica</FontFamily>
+				</Style>
+				<Header>
+					<RepeatOnNewPage>true</RepeatOnNewPage>
+					<TableRows>
+						<TableRow>
+							<Height>.35in</Height>
+							<TableCells>
+								<TableCell>
+									<ReportItems>
+										<Textbox Name="HeaderStatus">
+											<Style>
+												<FontFamily>Calibri</FontFamily>
+												<FontSize>11pt</FontSize>
+												<Color>#666666</Color>
+												<TextAlign>Center</TextAlign>
+												<PaddingLeft>8pt</PaddingLeft>
+												<PaddingRight>5pt</PaddingRight>
+												<PaddingTop>5pt</PaddingTop>
+												<PaddingBottom>5pt</PaddingBottom>
+												<FontWeight>700</FontWeight>
+												<BackgroundColor>#FAFAFA</BackgroundColor>
+												<BorderColor>
+													<Bottom>#dfdfdf</Bottom>
+													<Left>#dfdfdf</Left>
+													<Top>#dfdfdf</Top>
+													<Right>#dfdfdf</Right>
+												</BorderColor>
+												<BorderStyle>
+													<Bottom/>
+													<Left/>
+													<Top/>
+													<Right/>
+												</BorderStyle>
+											</Style>
+											<Top>.3in</Top>
+											<Left>.3in</Left>
+											<Height>0in</Height>
+											<Width>2pt</Width>
+											<CanGrow>true</CanGrow>
+											<Value>Status</Value>
+										</Textbox>
+									</ReportItems>
+								</TableCell>
+								<TableCell>
+									<ReportItems>
+										<Textbox Name="HeaderSubStatus">
+											<Style>
+												<FontFamily>Calibri</FontFamily>
+												<FontSize>11pt</FontSize>
+												<Color>#666666</Color>
+												<TextAlign>Center</TextAlign>
+												<PaddingLeft>8pt</PaddingLeft>
+												<PaddingRight>5pt</PaddingRight>
+												<PaddingTop>5pt</PaddingTop>
+												<PaddingBottom>5pt</PaddingBottom>
+												<FontWeight>700</FontWeight>
+												<BackgroundColor>#FAFAFA</BackgroundColor>
+												<BorderColor>
+													<Bottom>#dfdfdf</Bottom>
+													<Left>#dfdfdf</Left>
+													<Top>#dfdfdf</Top>
+													<Right>#dfdfdf</Right>
+												</BorderColor>
+												<BorderStyle>
+													<Bottom/>
+													<Left/>
+													<Top/>
+													<Right/>
+												</BorderStyle>
+											</Style>
+											<Top>.3in</Top>
+											<Left>.3in</Left>
+											<Height>0in</Height>
+											<Width>2pt</Width>
+											<CanGrow>true</CanGrow>
+											<Value>SubStatus</Value>
+										</Textbox>
+									</ReportItems>
+								</TableCell>
+							</TableCells>
+						</TableRow>
+					</TableRows>
+				</Header>
+				<Details>
+					<TableRows>
+						<TableRow>
+							<Height>.25in</Height>
+							<TableCells>
+								<TableCell>
+									<ReportItems>
+										<Textbox Name="DetailsStatus">
+											<Style>
+												<FontFamily>Verdana, Arial, Helvetica</FontFamily>
+												<FontSize>10pt</FontSize>
+												<TextAlign>Center</TextAlign>
+												<PaddingLeft>8pt</PaddingLeft>
+												<PaddingRight>2pt</PaddingRight>
+												<PaddingTop>10pt</PaddingTop>
+												<PaddingBottom>10pt</PaddingBottom>
+												<BorderColor>
+													<Right>#dfdfdf</Right>
+													<Top>#dfdfdf</Top>
+													<Bottom>#dfdfdf</Bottom>
+													<Left>#dfdfdf</Left>
+												</BorderColor>
+												<BorderStyle/>
+												<BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "#FFFFFF","#FFFFFF")</BackgroundColor>
+												<Color>=iif(Fields!leadid.Value &lt; 0, "#000000","#222222")</Color>
+											</Style>
+											<Top>0in</Top>
+											<Left>0in</Left>
+											<Height>.25in</Height>
+											<Width>0pt</Width>
+											<CanGrow>true</CanGrow>
+											<Value>=Fields!Status.Value</Value>
+										</Textbox>
+									</ReportItems>
+								</TableCell>
+								<TableCell>
+									<ReportItems>
+										<Textbox Name="DetailsSubStatus">
+											<Style>
+												<FontFamily>Verdana, Arial, Helvetica</FontFamily>
+												<FontSize>10pt</FontSize>
+												<TextAlign>Center</TextAlign>
+												<PaddingLeft>8pt</PaddingLeft>
+												<PaddingRight>2pt</PaddingRight>
+												<PaddingTop>10pt</PaddingTop>
+												<PaddingBottom>10pt</PaddingBottom>
+												<BorderColor>
+													<Right>#dfdfdf</Right>
+													<Top>#dfdfdf</Top>
+													<Bottom>#dfdfdf</Bottom>
+													<Left>#dfdfdf</Left>
+												</BorderColor>
+												<BorderStyle/>
+												<BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "#FFFFFF","#FFFFFF")</BackgroundColor>
+												<Color>=iif(Fields!leadid.Value &lt; 0, "#000000","#222222")</Color>
+											</Style>
+											<Top>0in</Top>
+											<Left>0in</Left>
+											<Height>.25in</Height>
+											<Width>0pt</Width>
+											<CanGrow>true</CanGrow>
+											<Value>=Fields!SubStatus.Value</Value>
+										</Textbox>
+									</ReportItems>
+								</TableCell>
+							</TableCells>
+						</TableRow>
+					</TableRows>
+				</Details>
+			</Table>
+		</ReportItems>
+	</Body>
+	<PageFooter>
+		<Style/>
+		<Height>100%</Height>
+		<PrintOnFirstPage>true</PrintOnFirstPage>
+		<PrintOnLastPage>true</PrintOnLastPage>
+	</PageFooter>
+	<CodeModules>
+		<CodeModule>rdlcodemoduleversion</CodeModule>
+	</CodeModules>
+</Report>
