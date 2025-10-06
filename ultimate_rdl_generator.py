@@ -241,14 +241,22 @@ def parse_sp_definition(sp_text: str) -> tuple:
 
     # Extract fields from the 'sql_query' variable within the procedure
     fields = []
+    sql_query = None
+
+    # Try to find the query in a 'sql_query' variable
     sql_query_match = re.search(r'sql_query\s*:=\s*\'(.*?)\';', sp_text, re.DOTALL | re.IGNORECASE)
     if sql_query_match:
         sql_query = sql_query_match.group(1)
-        # This regex finds all fields aliased with 'AS' (e.g., "p.name as product_name")
-        # It's the most reliable way to get the final column names for the report.
-        aliases = re.findall(r'(?:\w|\.)+\s+as\s+(\w+)|ROW_NUMBER\(.*?\)\s+as\s+(\w+)', sql_query, re.IGNORECASE | re.DOTALL)
-        # The regex returns a list of tuples, so we flatten it and remove empty items.
-        fields = [item for tpl in aliases for item in tpl if item]
+    else:
+        # If not found, try to find the query in an 'OPEN ... FOR' statement
+        open_for_match = re.search(r'OPEN\s+\w+\s+FOR\s+(.*?);', sp_text, re.DOTALL | re.IGNORECASE)
+        if open_for_match:
+            sql_query = open_for_match.group(1)
+
+    if sql_query:
+        # This regex is simplified to find any 'AS alias' pattern.
+        aliases = re.findall(r'AS\s+(\w+)', sql_query, re.IGNORECASE)
+        fields = aliases
 
     return sp_name, params, fields
 
