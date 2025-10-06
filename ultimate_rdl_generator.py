@@ -194,7 +194,7 @@ def main():
             with col2:
                 if st.button("Remove", key=f"remove_field_{i}"):
                     st.session_state.fields.pop(i)
-                    st.experimental_rerun()
+                    st.rerun()
 
         with st.form("new_field_form"):
             st.write("Add New Field")
@@ -203,7 +203,7 @@ def main():
             submitted = st.form_submit_button("Add Field")
             if submitted:
                 st.session_state.fields.append(new_field_name)
-                st.experimental_rerun()
+                st.rerun()
 
         st.markdown("---")
 
@@ -223,7 +223,7 @@ def main():
             with col3:
                 if st.button("Remove", key=f"remove_param_{i}"):
                     st.session_state.report_params.pop(i)
-                    st.experimental_rerun()
+                    st.rerun()
 
         with st.form("new_param_form"):
             st.write("Add New Parameter")
@@ -233,7 +233,7 @@ def main():
             submitted = st.form_submit_button("Add Parameter")
             if submitted:
                 st.session_state.report_params.append({'name': new_param_name, 'data_type': new_param_type})
-                st.experimental_rerun()
+                st.rerun()
 
         st.markdown("---")
 
