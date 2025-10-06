@@ -26,7 +26,7 @@ def create_details_cell(field_name, ns_map, first_field):
     cell_xml = f'''<TableCell xmlns="{ns_map['rdl']}"><ReportItems><Textbox Name="Details{field_name}"><Style><FontFamily>Verdana, Arial, Helvetica</FontFamily><FontSize>10pt</FontSize><TextAlign>Center</TextAlign><PaddingLeft>8pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>10pt</PaddingTop><PaddingBottom>10pt</PaddingBottom><BorderColor><Right>#dfdfdf</Right><Top>#dfdfdf</Top><Bottom>#dfdfdf</Bottom><Left>#dfdfdf</Left></BorderColor><BorderStyle/><BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "#FFFFFF","#FFFFFF")</BackgroundColor><Color>=iif(Fields!{first_field}.Value &lt; 0, "#000000","#222222")</Color></Style><Top>0in</Top><Left>0in</Left><Height>.25in</Height><Width>0pt</Width><CanGrow>true</CanGrow><Value>=Fields!{field_name}.Value</Value></Textbox></ReportItems></TableCell>'''
     return ET.fromstring(cell_xml)
 
-def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, table_name: str) -> str:
+def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, table_name: str, report_params: list) -> str:
     try:
         tree = ET.parse('rdl_template.xml')
         root = tree.getroot()
@@ -62,11 +62,11 @@ def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, tabl
         report_params_element = root.find('.//rdl:ReportParameters', ns)
         if report_params_element is not None:
             report_params_element.clear()
-            for name, data_type in params.items():
+            for param in report_params:
                 rp = ET.SubElement(report_params_element, 'ReportParameter')
-                rp.set('Name', name)
+                rp.set('Name', param['name'])
                 dt = ET.SubElement(rp, 'DataType')
-                dt.text = map_db_type_to_rdl_type(data_type)
+                dt.text = param['data_type']
                 dv = ET.SubElement(rp, 'DefaultValue')
                 vs = ET.SubElement(dv, 'Values')
                 v = ET.SubElement(vs, 'Value')
@@ -157,6 +157,19 @@ def main():
     st.title("📄 Smart RDL Generator UI")
     st.markdown("Paste your `CREATE PROCEDURE` script into the text area below to generate an RDL file.")
 
+    # Initialize session state for parameters
+    if 'report_params' not in st.session_state:
+        st.session_state.report_params = [
+            {'name': 'ownerid', 'data_type': 'Integer'},
+            {'name': 'userid', 'data_type': 'Integer'},
+            {'name': 'startindex', 'data_type': 'Integer'},
+            {'name': 'endindex', 'data_type': 'Integer'},
+            {'name': 'filter', 'data_type': 'String'},
+            {'name': 'filter1', 'data_type': 'String'},
+            {'name': 'filter2', 'data_type': 'String'},
+            {'name': 'p_refcur', 'data_type': 'cursor'},
+        ]
+
     sql_script = st.text_area("Enter SQL Script Here:", height=300, placeholder="CREATE OR REPLACE PROCEDURE...")
 
     if not sql_script:
@@ -182,6 +195,31 @@ def main():
         
         st.markdown("---")
 
+        st.subheader("Report Parameters")
+
+        for i, param in enumerate(st.session_state.report_params):
+            col1, col2, col3 = st.columns([3, 2, 1])
+            with col1:
+                st.session_state.report_params[i]['name'] = st.text_input("Name", value=param['name'], key=f"param_name_{i}")
+            with col2:
+                st.session_state.report_params[i]['data_type'] = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"], index=["String", "Integer", "DateTime", "Boolean", "Float", "cursor"].index(param['data_type']), key=f"param_type_{i}")
+            with col3:
+                if st.button("Remove", key=f"remove_param_{i}"):
+                    st.session_state.report_params.pop(i)
+                    st.experimental_rerun()
+
+        with st.form("new_param_form"):
+            st.write("Add New Parameter")
+            new_param_name = st.text_input("Name")
+            new_param_type = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"])
+            
+            submitted = st.form_submit_button("Add Parameter")
+            if submitted:
+                st.session_state.report_params.append({'name': new_param_name, 'data_type': new_param_type})
+                st.experimental_rerun()
+
+        st.markdown("---")
+
         if st.button("🚀 Generate RDL File", use_container_width=True):
             if not fields:
                 st.error("Cannot generate RDL without fields. Please enter them manually above.")
@@ -189,7 +227,7 @@ def main():
                 st.error("Table name cannot be empty.")
             else:
                 with st.spinner('Generating RDL content...'):
-                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, fields, table_name)
+                    generated_rdl_content = generate_rdl_from_parsed_info(sp_name, params, fields, table_name, st.session_state.report_params)
                 
                 if generated_rdl_content.startswith('Error') or generated_rdl_content.startswith('An unexpected error'):
                     st.error(generated_rdl_content)
