@@ -118,9 +118,10 @@ def generate_rdl_from_parsed_info(sp_name: str, params: dict, fields: list, tabl
     loads the 'rdl_template.xml', and injects the new data.
     """
     try:
-        # Parse the base template file.
-        tree = ET.parse('rdl_template.xml')
-        root = tree.getroot()
+        # Read the template file as a string and parse it.
+        with open('rdl_template.xml', 'r', encoding='utf-8') as f:
+            rdl_template_content = f.read()
+        root = ET.fromstring(rdl_template_content)
         ns = {'rdl': 'http://schemas.microsoft.com/sqlserver/reporting/2003/10/reportdefinition'}
 
         # --- Update Stored Procedure Name ---
