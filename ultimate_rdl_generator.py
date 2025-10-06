@@ -129,11 +129,19 @@ def parse_sp_definition(sp_text):
             params[match[0]] = match[1].strip()
 
     fields = []
+    sql_query = None
+
     sql_query_match = re.search(r'sql_query\s*:=\s*\'(.*?)\';', sp_text, re.DOTALL | re.IGNORECASE)
     if sql_query_match:
         sql_query = sql_query_match.group(1)
-        aliases = re.findall(r'(?:\w|\.)+\s+as\s+(\w+)|ROW_NUMBER\(.*?\)\s+as\s+(\w+)', sql_query, re.IGNORECASE | re.DOTALL)
-        fields = [item for tpl in aliases for item in tpl if item]
+    else:
+        open_for_match = re.search(r'OPEN\s+\w+\s+FOR\s+(.*?);', sp_text, re.DOTALL | re.IGNORECASE)
+        if open_for_match:
+            sql_query = open_for_match.group(1)
+
+    if sql_query:
+        aliases = re.findall(r'AS\s+(\w+)', sql_query, re.IGNORECASE)
+        fields = aliases
 
     return sp_name, params, fields
 
