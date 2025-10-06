@@ -1,0 +1,8 @@
+# Ignore all files
+*
+
+# Un-ignore the important files
+!ultimate_rdl_generator.py
+!rdl_template.xml
+!requirements.txt
+!.gitignore
