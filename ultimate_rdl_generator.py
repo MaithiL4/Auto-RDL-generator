@@ -155,7 +155,7 @@ def parse_sp_definition(sp_text):
 def main():
     st.set_page_config(page_title="RDL Generator", page_icon="📄", layout="wide")
     st.title("📄 Smart RDL Generator")
-    st.markdown("by [MaithiL4](https://github.com/MaithiL4)")
+    st.markdown("GITHUB : - https://github.com/MaithiL4")
 
     st.markdown("Paste your `CREATE PROCEDURE` script below to automatically generate an RDL file.")
 
