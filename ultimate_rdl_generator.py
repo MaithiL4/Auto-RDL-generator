@@ -153,9 +153,10 @@ def parse_sp_definition(sp_text):
 # --- Streamlit UI Code (No changes here) ---
 
 def main():
-    st.set_page_config(page_title="RDL Generator", layout="wide")
-    st.title("📄 Smart RDL Generator UI")
-    st.markdown("Paste your `CREATE PROCEDURE` script into the text area below to generate an RDL file.")
+    st.set_page_config(page_title="RDL Generator", page_icon="📄", layout="wide")
+    st.title("📄 Smart RDL Generator")
+
+    st.markdown("Paste your `CREATE PROCEDURE` script below to automatically generate an RDL file.")
 
     # Initialize session state
     if 'report_params' not in st.session_state:
@@ -174,7 +175,7 @@ def main():
     if 'sql_script' not in st.session_state:
         st.session_state.sql_script = ""
 
-    sql_script = st.text_area("Enter SQL Script Here:", height=300, placeholder="CREATE OR REPLACE PROCEDURE...")
+    sql_script = st.text_area("Enter SQL Script Here:", height=250, placeholder="CREATE OR REPLACE PROCEDURE...")
 
     if not sql_script:
         st.info("Waiting for SQL script input.")
@@ -191,56 +192,55 @@ def main():
             st.write(f"**Procedure Name:** `{sp_name}`")
             st.write(f"**Parameters:** `{params}`")
 
-        st.subheader("Report Fields")
-        for i, field in enumerate(st.session_state.fields):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.session_state.fields[i]['name'] = st.text_input("Field Name", value=field['name'], key=f"field_name_{field['id']}")
-            with col2:
-                if st.button("Remove", key=f"remove_field_{field['id']}"):
-                    st.session_state.fields.pop(i)
-                    st.rerun()
+        st.markdown("---")
 
-        with st.form("new_field_form"):
-            st.write("Add New Field")
-            new_field_name = st.text_input("Name")
-            
-            submitted = st.form_submit_button("Add Field")
-            if submitted:
-                new_id = max([f['id'] for f in st.session_state.fields]) + 1 if st.session_state.fields else 1
-                st.session_state.fields.append({'id': new_id, 'name': new_field_name})
-                st.rerun()
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("📋 Report Fields")
+            for i, field in enumerate(st.session_state.fields):
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.session_state.fields[i]['name'] = st.text_input("Field Name", value=field['name'], key=f"field_name_{field['id']}")
+                with c2:
+                    st.button("Remove", key=f"remove_field_{field['id']}", on_click=lambda i=i: st.session_state.fields.pop(i))
+
+            with st.container():
+                with st.form("new_field_form"):
+                    st.write("**Add New Field**")
+                    new_field_name = st.text_input("Name")
+                    submitted = st.form_submit_button("Add Field")
+                    if submitted:
+                        new_id = max([f['id'] for f in st.session_state.fields]) + 1 if st.session_state.fields else 1
+                        st.session_state.fields.append({'id': new_id, 'name': new_field_name})
+                        st.rerun()
+
+        with col2:
+            st.subheader("⚙️ Report Parameters")
+            for i, param in enumerate(st.session_state.report_params):
+                c1, c2, c3 = st.columns([2, 2, 1])
+                with c1:
+                    st.session_state.report_params[i]['name'] = st.text_input("Name", value=param['name'], key=f"param_name_{param['id']}")
+                with c2:
+                    st.session_state.report_params[i]['data_type'] = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"], index=["String", "Integer", "DateTime", "Boolean", "Float", "cursor"].index(param['data_type']), key=f"param_type_{param['id']}")
+                with c3:
+                    st.button("Remove", key=f"remove_param_{param['id']}", on_click=lambda i=i: st.session_state.report_params.pop(i))
+
+            with st.container():
+                with st.form("new_param_form"):
+                    st.write("**Add New Parameter**")
+                    new_param_name = st.text_input("Name")
+                    new_param_type = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"])
+                    submitted = st.form_submit_button("Add Parameter")
+                    if submitted:
+                        new_id = max([p['id'] for p in st.session_state.report_params]) + 1 if st.session_state.report_params else 1
+                        st.session_state.report_params.append({'id': new_id, 'name': new_param_name, 'data_type': new_param_type})
+                        st.rerun()
 
         st.markdown("---")
 
         default_table_name = sp_name.split('.')[-1].replace('_', ' ').title()
         table_name = st.text_input("Enter a name for the report table:", value=default_table_name)
-        
-        st.markdown("---")
-
-        st.subheader("Report Parameters")
-
-        for i, param in enumerate(st.session_state.report_params):
-            col1, col2, col3 = st.columns([3, 2, 1])
-            with col1:
-                st.session_state.report_params[i]['name'] = st.text_input("Name", value=param['name'], key=f"param_name_{param['id']}")
-            with col2:
-                st.session_state.report_params[i]['data_type'] = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"], index=["String", "Integer", "DateTime", "Boolean", "Float", "cursor"].index(param['data_type']), key=f"param_type_{param['id']}")
-            with col3:
-                if st.button("Remove", key=f"remove_param_{param['id']}"):
-                    st.session_state.report_params.pop(i)
-                    st.rerun()
-
-        with st.form("new_param_form"):
-            st.write("Add New Parameter")
-            new_param_name = st.text_input("Name")
-            new_param_type = st.selectbox("Data Type", ["String", "Integer", "DateTime", "Boolean", "Float", "cursor"])
-            
-            submitted = st.form_submit_button("Add Parameter")
-            if submitted:
-                new_id = max([p['id'] for p in st.session_state.report_params]) + 1 if st.session_state.report_params else 1
-                st.session_state.report_params.append({'id': new_id, 'name': new_param_name, 'data_type': new_param_type})
-                st.rerun()
 
         st.markdown("---")
 
